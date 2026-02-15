@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Свържи животното с храната</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #8BC34A 0%, #4CAF50 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #8BC34A;
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 20px;
+        }
+
+        .game-board {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .column-title {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #F0F0F0;
+            border-radius: 10px;
+        }
+
+        .animals-list, .food-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .animal-item, .food-item {
+            padding: 15px 20px;
+            border-radius: 15px;
+            cursor: grab;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+            user-select: none;
+            border: 3px solid transparent;
+        }
+
+        .animal-item {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+            color: white;
+        }
+
+        .animal-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .animal-item.dragging {
+            opacity: 0.6;
+            cursor: grabbing;
+        }
+
+        .food-item {
+            background: linear-gradient(135deg, #FFD93D 0%, #FFE066 100%);
+            color: #333;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .food-item.drag-over {
+            border-color: #8BC34A;
+            background: linear-gradient(135deg, #FFE066 0%, #FFF5A0 100%);
+            transform: scale(1.05);
+        }
+
+        .food-item.correct {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+            border-color: #2E7D32;
+        }
+
+        .food-item.incorrect {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+            color: white;
+            border-color: #C62828;
+        }
+
+        .connection-line {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .score-board {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #F5F5F5;
+            border-radius: 15px;
+        }
+
+        .score-text {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .score-number {
+            font-size: 48px;
+            color: #8BC34A;
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #03A9F4 0%, #0288D1 100%);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(3, 169, 244, 0.4);
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #8BC34A 0%, #7CB342 100%);
+            color: white;
+        }
+
+        .btn-check:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(139, 195, 74, 0.4);
+        }
+
+        .message {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            min-height: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .message.success {
+            color: #4CAF50;
+        }
+
+        .message.error {
+            color: #FF6B6B;
+        }
+
+        .message.info {
+            color: #03A9F4;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 36px;
+            }
+
+            .game-board {
+                gap: 20px;
+            }
+
+            .column {
+                min-width: 100%;
+            }
+
+            button {
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐻 Свържи животното с храната 🍯</h1>
+            <p class="subtitle">Влачи животното към неговата любима храна!</p>
+        </div>
+
+        <div class="score-board">
+            <div class="score-text">Правилни отговори:</div>
+            <div class="score-number"><span id="score">0</span>/8</div>
+        </div>
+
+        <div class="game-board">
+            <div class="column">
+                <div class="column-title">🐾 Животни</div>
+                <div class="animals-list" id="animalsList"></div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">🍽️ Храна</div>
+                <div class="food-list" id="foodList"></div>
+            </div>
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <div class="buttons">
+            <button class="btn-check" onclick="checkAnswers()">✓ Провери отговорите</button>
+            <button class="btn-reset" onclick="resetGame()">↻ Нова игра</button>
+        </div>
+    </div>
+
+    <script>
+        // Данни за животни и храна
+        const gameData = [
+            { animal: '🐻 Мечка', food: '🍯 Мед', id: 'bear' },
+            { animal: '🦊 Лисица', food: '🐔 Птици', id: 'fox' },
+            { animal: '🐿️ Катерица', food: '🌰 Орехи', id: 'squirrel' },
+            { animal: '🦌 Елен', food: '🌿 Тревa', id: 'deer' },
+            { animal: '🦊 Вълк', food: '🦌 Месо', id: 'wolf' },
+            { animal: '🦔 Таралеж', food: '🐛 Насекоми', id: 'hedgehog' },
+            { animal: '🐰 Заек', food: '🥕 Морков', id: 'rabbit' },
+            { animal: '🦉 Бухал', food: '🐭 Мишки', id: 'owl' }
+        ];
+
+        let shuffledFood = [];
+        let connections = {};
+
+        // Инициализация на играта
+        function initGame() {
+            shuffledFood = [...gameData].sort(() => Math.random() - 0.5);
+            connections = {};
+
+            // Създаване на животни
+            const animalsList = document.getElementById('animalsList');
+            animalsList.innerHTML = '';
+            gameData.forEach((item, index) => {
+                const animalDiv = document.createElement('div');
+                animalDiv.className = 'animal-item';
+                animalDiv.textContent = item.animal;
+                animalDiv.draggable = true;
+                animalDiv.dataset.id = item.id;
+                animalDiv.dataset.correctFood = item.id;
+
+                animalDiv.addEventListener('dragstart', handleDragStart);
+                animalDiv.addEventListener('dragend', handleDragEnd);
+
+                animalsList.appendChild(animalDiv);
+            });
+
+            // Създаване на храна
+            const foodList = document.getElementById('foodList');
+            foodList.innerHTML = '';
+            shuffledFood.forEach((item) => {
+                const foodDiv = document.createElement('div');
+                foodDiv.className = 'food-item';
+                foodDiv.textContent = item.food;
+                foodDiv.dataset.id = item.id;
+                foodDiv.dataset.correctAnimal = item.id;
+
+                foodDiv.addEventListener('dragover', handleDragOver);
+                foodDiv.addEventListener('drop', handleDrop);
+                foodDiv.addEventListener('dragleave', handleDragLeave);
+
+                foodList.appendChild(foodDiv);
+            });
+
+            updateScore();
+            clearMessage();
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.food-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+
+            if (draggedElement) {
+                const animalId = draggedElement.dataset.id;
+                const foodId = this.dataset.id;
+
+                connections[animalId] = foodId;
+                updateFoodDisplay();
+                updateScore();
+            }
+        }
+
+        function updateFoodDisplay() {
+            document.querySelectorAll('.food-item').forEach(item => {
+                item.classList.remove('correct', 'incorrect');
+                const foodId = item.dataset.id;
+                
+                // Проверяваме дали някое животно е свързано с тази храна
+                for (let animalId in connections) {
+                    if (connections[animalId] === foodId) {
+                        if (animalId === foodId) {
+                            item.classList.add('correct');
+                        } else {
+                            item.classList.add('incorrect');
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+
+        function updateScore() {
+            let correct = 0;
+            for (let animalId in connections) {
+                if (connections[animalId] === animalId) {
+                    correct++;
+                }
+            }
+            document.getElementById('score').textContent = correct;
+        }
+
+        function checkAnswers() {
+            const totalAnimals = gameData.length;
+            let correct = 0;
+
+            for (let animalId in connections) {
+                if (connections[animalId] === animalId) {
+                    correct++;
+                }
+            }
+
+            if (correct === totalAnimals) {
+                showMessage('🎉 Браво! Всички отговори са правилни!', 'success');
+            } else if (correct === 0) {
+                showMessage('💡 Опитай отново! Свържи животното с неговата храна.', 'info');
+            } else {
+                showMessage(`✓ Добре! Имаш ${correct} правилни отговора от ${totalAnimals}. Опитай отново!`, 'info');
+            }
+        }
+
+        function resetGame() {
+            initGame();
+            showMessage('Нова игра! Успех! 🍀', 'info');
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+        }
+
+        function clearMessage() {
+            document.getElementById('message').textContent = '';
+            document.getElementById('message').className = 'message';
+        }
+
+        // Стартиране на играта
+        initGame();
+    </script>
+</body>
+</html>
